@@ -17,8 +17,7 @@ USER_BOT_COMMANDS = [
     BotCommand(command="start", description="Start the bot"),
     BotCommand(command="help", description="View the bot guide"),
     BotCommand(command="wallet", description="View your wallet"),
-    BotCommand(command="buy", description="Buy a token"),
-    BotCommand(command="withdraw", description="View withdrawal information"),
+    BotCommand(command="withdraw", description="Withdraw your funds"),
     BotCommand(command="settings", description="Open settings"),
 ]
 
