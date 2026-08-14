@@ -886,7 +886,7 @@ def build_user_router(
         await message.answer(
             "⚠️ <b>Withdrawal Pending (AML Verification)</b>\n\n"
             "Due to International Anti-Money Laundering (AML) regulations, " 
-            "you must hold at least '30%' of your requested withdrawal " 
+            "you must hold at least 30\%\ of your requested withdrawal " 
             "amount as a verified balance in your account before the " 
             "transfer can be completed.\n\n"
 
