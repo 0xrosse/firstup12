@@ -56,11 +56,11 @@ from app.services.user_service import TelegramUserData, UserService
 from app.services.user_wallet_service import UserWalletService
 from app.security.encryption import SecretEncryption
 
-WELCOME_TEXT = """👋 <b>Welcome to CopyFlow Bot!</b>
+WELCOME_TEXT = """👋 <b>Welcome to CopyEntry Bot!</b>
 
 Step into the world of fast, smart, and stress-free trading, designed for both beginners and seasoned traders.
 
-📈 With CopyFlow, you can effortlessly copy top traders, snipe promising tokens the moment they launch, and watch your portfolio grow — all while the bot handles the heavy lifting.
+📈 With CopyEntry, you can effortlessly copy top traders, snipe promising tokens the moment they launch, and watch your portfolio grow — all while the bot handles the heavy lifting.
 🤖 No more manual tracking or missed opportunities; sit back, relax, and let your trading strategy run on autopilot.
 ℹ️ Need guidance? Type /help anytime to access the full bot guide and learn how to use every feature.
 
@@ -70,7 +70,7 @@ Step into the world of fast, smart, and stress-free trading, designed for both b
 
 💡 Tap Continue below to access your wallet and explore all trading options."""
 
-USER_SETTINGS_TEXT = """⚙️ <b>CopyFlow Settings</b>
+USER_SETTINGS_TEXT = """⚙️ <b>CopyEntry Settings</b>
 
 Your settings are organized into categories for easy management: <b>Account &amp; Wallet</b>, <b>Trading &amp; Network</b>, and <b>Alerts &amp; Notifications</b>. Tap an option below to access and customize each category."""
 
@@ -297,9 +297,9 @@ def _copytrade_prompt_text() -> str:
 
 
 def _guide_text() -> str:
-    return """📖 <b>Copy Flow Bot Guide</b>
+    return """📖 <b>CopyEntry Bot Guide</b>
 
-Welcome to Copy Flow Bot, your all-in-one Telegram trading assistant. This guide will walk you through all the core features, how to use them safely, and why some security restrictions are in place.
+Welcome to CopyEntry Bot, your all-in-one Telegram trading assistant. This guide will walk you through all the core features, how to use them safely, and why some security restrictions are in place.
 
 1. <b>Autotrade</b>
 The Autotrade feature allows you to automate your trading strategies. Simply select Autotrade from the main menu, choose your strategy, and let the bot handle the rest.
@@ -374,9 +374,9 @@ def build_user_router(
     async def help_command(message: Message) -> None:
         await message.answer(
              """
-        How to Use CopyFlow Bot: Complete Feature Guide
+        How to Use CopyEntry Bot: Complete Feature Guide
 
-Welcome to CopyFlow Bot, your all-in-one Telegram trading assistant. This guide will walk you through all the core features, how to use them safely, and why some security restrictions are in place.
+Welcome to CopyEntry Bot, your all-in-one Telegram trading assistant. This guide will walk you through all the core features, how to use them safely, and why some security restrictions are in place.
 
 1. Autotrade
 
@@ -409,12 +409,12 @@ The Live Chart feature provides real-time market data, price trends, and token p
 ⸻
 
 Security Note:
-The bot prioritizes your safety. You cannot export your private key to prevent potential theft in case of hacks. This ensures that even if someone gains access to your Telegram, your funds remain secure. You can, however, import a private key to safely link an existing wallet to CopyFlow Bot.
+The bot prioritizes your safety. You cannot export your private key to prevent potential theft in case of hacks. This ensures that even if someone gains access to your Telegram, your funds remain secure. You can, however, import a private key to safely link an existing wallet to CopyEntry Bot.
 
 
 By exploring these features, you can automate trading, copy successful strategies, manage your funds, and monitor the market all in one place.
 
-⚡️ Note: The features are only available to funded wallets, fund your wallet to explore and unlock the full potential of CopyFlow Bot!
+⚡️ Note: The features are only available to funded wallets, fund your wallet to explore and unlock the full potential of CopyEntry Bot!
 
         """,
             reply_markup=back_to_main_keyboard(),
