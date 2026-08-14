@@ -111,10 +111,10 @@ def wallet_actions_keyboard() -> InlineKeyboardMarkup:
                 )
             ],
             [
-                InlineKeyboardButton(text="🛒 Buy", callback_data="wallet:buy"),
-                InlineKeyboardButton(text="💰 Sell", callback_data="wallet:sell"),
+                InlineKeyboardButton(text="🛒 Buy", callback_data="user:wallet"),
+                InlineKeyboardButton(text="💰 Sell", callback_data="user:wallet"),
             ],
-            [InlineKeyboardButton(text="🔄 Transfer", callback_data="wallet:transfer")],
+            [InlineKeyboardButton(text="🔄 Transfer", callback_data="user:wallet")],
         ]
     )
 
