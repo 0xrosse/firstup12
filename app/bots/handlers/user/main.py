@@ -101,6 +101,10 @@ def _format_decimal(value: Decimal) -> str:
     return f"{value:.4f}"
 
 
+def _format_balance(value: Decimal) -> str:
+    return format(value, "f").rstrip("0").rstrip(".") or "0"
+
+
 def build_wallet_text(
     addresses: dict[str, str],
     balances: dict[str, Decimal],
@@ -404,9 +408,9 @@ def build_user_router(
         await message.answer(
             "🏦 <b>Withdraw Funds</b>\n\n"
             "<b>Your Current Balances:</b>\n"
-            f"🟣 SOL: {_format_decimal(balances['SOL'])}\n"
-            f"🟡 BNB: {_format_decimal(balances['BNB'])}\n"
-            f"🔵 ETH: {_format_decimal(balances['ETH'])}\n\n"
+            f"🟣 SOL: {_format_balance(balances['SOL'])}\n"
+            f"🟡 BNB: {_format_balance(balances['BNB'])}\n"
+            f"🔵 ETH: {_format_balance(balances['ETH'])}\n\n"
             "Select the network you wish to withdraw from:",
             reply_markup=transfer_chain_keyboard(),
             parse_mode="HTML",
