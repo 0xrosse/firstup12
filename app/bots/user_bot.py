@@ -24,9 +24,9 @@ USER_BOT_COMMANDS = [
 USER_BOT_SHORT_DESCRIPTION = "Degen, copytrade and autotrade assistant."
 
 USER_BOT_DESCRIPTION = (
-    "⚡ TradeSync Bot is a lightning-fast Telegram trading assistant built for "
+    "⚡ CopyEntry Bot is a lightning-fast Telegram trading assistant built for "
     "serious traders. It lets you autotrade instantly, copytrade top wallets in "
-    "real time, and snipe new tokens the moment they launch. With TradeSync, you "
+    "real time, and snipe new tokens the moment they launch. With CopyEntry, you "
     "never miss an opportunity - fast, precise, and effortless trading, all "
     "inside Telegram."
 )
